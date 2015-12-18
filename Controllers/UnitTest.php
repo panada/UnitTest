@@ -9,16 +9,18 @@ use Resources;
 
 class UnitTest extends Resources\Controller
 {
+	public function __construct()
+    {
+        parent::__construct();	
+        chdir('/home/septiadi/HTDOCS/septiadi');
+    }
     
     public function index()
     {
         $this->data = array();
-		
-        $path = 'Models';
-        
-        $Models = $this->listingFile($path);
-        
-        //~ $Models = $this->listingFile();
+		                
+        $Models = $this->listingFile();
+        asort($Models);
         //~ echo '<pre>';print_r($Models);echo '</pre>';die();
         
         $this->data['models'] = $Models;
@@ -28,6 +30,14 @@ class UnitTest extends Resources\Controller
     
     private function listingFile($path = '')
     {
+        $excludeDir = ['config','Controllers','views'];
+        $excludeFile = ['index.php'];
+        $subpath = explode('/',$path);
+        if(in_array(end($subpath),$excludeDir)){
+            return false;
+        }
+        
+        $path = ($path != '')?$path.'/':'';
         $list = scandir('app/'.$path);
         array_shift($list);
         array_shift($list);
@@ -37,15 +47,16 @@ class UnitTest extends Resources\Controller
         foreach ($list as $val)
         {
             
-            if(is_dir('app/'.$path.'/'.$val)){
-                $dump = $this->listingFile($path.'/'.$val);
+            if(is_dir('app/'.$path.$val)){
+                $dump = $this->listingFile($path.$val);
+                if($dump)
                 $return = array_merge($dump,$return);
             }else{            
-                $dump = $path.'/'.$val;
-                //~ if($path != ''){
-                    //~ $dump = substr($dump, 1);
-                //~ }
-                $return[] = $dump;
+                if(!in_array($val,$excludeFile)){                
+                    $dump = $path.$val;
+                    if($path != '')
+                    $return[] = $dump;
+                }
             }
         }
         
@@ -54,14 +65,7 @@ class UnitTest extends Resources\Controller
     }
     
     public function test()
-    {
-        //~ http://localhost/septiadi/UnitTest/test?f=Models/Post.php
-        //~ $test = 'es';
-        //~ 
-        //~ $utest = new UnitTests;
-        //~ 
-        //~ echo '<pre>';print_r($utest);echo '</pre>';die();
-        
+    {   
         $path = explode("/",$_GET['f']);
         
         $fileName = array_pop($path);
@@ -73,9 +77,9 @@ class UnitTest extends Resources\Controller
         
         eval("\$this->test = new \\{$path}\\{$className};");
         
-        echo "<b>{$path}\\{$className}<br></b>";
+        //~ echo "<b><i>{$path}\\{$className}</i><br></b>";
         
-        $file = file_get_contents("app/".$path."/".$fileName);
+        $file = file_get_contents("app/".str_replace('\\','/',$path)."/".$fileName);
         $filearr = explode(PHP_EOL, $file);
         foreach ($filearr as $val)
         {
