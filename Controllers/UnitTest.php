@@ -12,7 +12,7 @@ class UnitTest extends Resources\Controller
 	public function __construct()
     {
         parent::__construct();	
-        chdir('/home/septiadi/HTDOCS/septiadi');
+        $this->app = 'app/';
     }
     
     public function index()
@@ -38,7 +38,7 @@ class UnitTest extends Resources\Controller
         }
         
         $path = ($path != '')?$path.'/':'';
-        $list = scandir('app/'.$path);
+        $list = scandir($this->app.$path);
         array_shift($list);
         array_shift($list);
         
@@ -47,7 +47,7 @@ class UnitTest extends Resources\Controller
         foreach ($list as $val)
         {
             
-            if(is_dir('app/'.$path.$val)){
+            if(is_dir($this->app.$path.$val)){
                 $dump = $this->listingFile($path.$val);
                 if($dump)
                 $return = array_merge($dump,$return);
@@ -74,12 +74,11 @@ class UnitTest extends Resources\Controller
         $className = $className[0];
         
         $path = implode("\\",$path);
+
+        $file = file_get_contents($this->app.str_replace('\\','/',$path)."/".$fileName);
         
         eval("\$this->test = new \\{$path}\\{$className};");
         
-        //~ echo "<b><i>{$path}\\{$className}</i><br></b>";
-        
-        $file = file_get_contents("app/".str_replace('\\','/',$path)."/".$fileName);
         $filearr = explode(PHP_EOL, $file);
         foreach ($filearr as $val)
         {
@@ -95,7 +94,6 @@ class UnitTest extends Resources\Controller
                 }");
             }
         }
-        
     }
 }
 
